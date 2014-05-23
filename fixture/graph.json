@@ -1,0 +1,96 @@
+{
+  "G1": {
+    "points": [
+      { "id": "A", "name": "A" },
+      { "id": "B", "name": "B" },
+      { "id": "C", "name": "C" },
+      { "id": "D", "name": "D" },
+      { "id": "E", "name": "E" },
+      { "id": "F", "name": "F" },
+      { "id": "G", "name": "G" },
+      { "id": "H", "name": "H" }
+    ],
+
+    "edges": [
+      { "parent": "A", "child": "B" },
+      { "parent": "A", "child": "C" },
+      { "parent": "B", "child": "D" },
+      { "parent": "B", "child": "E" },
+      { "parent": "C", "child": "F" },
+      { "parent": "D", "child": "E" },
+      { "parent": "D", "child": "H" },
+      { "parent": "E", "child": "G" },
+      { "parent": "F", "child": "E" },
+      { "parent": "F", "child": "H" },
+      { "parent": "G", "child": "H" }
+    ]
+  },
+
+  "G2": {
+    "points": [
+      { "id": "I", "name": "I" },
+      { "id": "J", "name": "J" },
+      { "id": "K", "name": "K" },
+      { "id": "L", "name": "L" },
+      { "id": "M", "name": "M" },
+      { "id": "N", "name": "N" },
+      { "id": "O", "name": "O" },
+      { "id": "P", "name": "P" }
+    ],
+
+    "edges": [
+      { "parent": "I", "child": "K" },
+      { "parent": "J", "child": "K" },
+      { "parent": "K", "child": "L" },
+      { "parent": "K", "child": "M" },
+      { "parent": "L", "child": "N" },
+      { "parent": "M", "child": "N" },
+      { "parent": "O", "child": "P" }
+    ]
+  },
+
+  "G3": {
+    "points": [
+      { "id": "A", "name": "A" },
+      { "id": "B", "name": "B" },
+      { "id": "C", "name": "C" },
+      { "id": "D", "name": "D" },
+      { "id": "E", "name": "E" },
+      { "id": "F", "name": "F" }
+    ],
+
+    "edges": [
+      { "parent": "A", "child": "B" },
+      { "parent": "A", "child": "C" },
+      { "parent": "A", "child": "D" },
+      { "parent": "B", "child": "C" },
+      { "parent": "B", "child": "E" },
+      { "parent": "C", "child": "D" },
+      { "parent": "C", "child": "F" },
+      { "parent": "D", "child": "E" },
+      { "parent": "E", "child": "F" }
+    ]
+  },
+
+  "G4": {
+    "points": [
+      { "id": "A", "name": "A" },
+      { "id": "B", "name": "B" },
+      { "id": "C", "name": "C" },
+      { "id": "D", "name": "D" },
+      { "id": "E", "name": "E" },
+      { "id": "F", "name": "F" },
+      { "id": "G", "name": "G" }
+    ],
+
+    "edges": [
+      { "parent": "A", "child": "D" },
+      { "parent": "A", "child": "B" },
+      { "parent": "B", "child": "C" },
+      { "parent": "D", "child": "E" },
+      { "parent": "C", "child": "E" },
+      { "parent": "G", "child": "E" },
+      { "parent": "E", "child": "F" }
+    ]
+  }
+}
