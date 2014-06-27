@@ -119,6 +119,8 @@ define (require, exports, module)->
         .style
           'margin': '25px 0 0 25px'
 
+      return if start_count + common_count is 0
+
       arcs = svg.selectAll 'g.arc'
         .data d3.layout.pie()([start_count, common_count])
         .enter()
@@ -257,8 +259,12 @@ define (require, exports, module)->
 
 
     _init_pos: ->
-      first_node = @tree_data.roots[0]
-      @offset_x = - first_node.x + @width * 0.3
+      if @tree_data.roots.length
+        first_node = @tree_data.roots[0]
+        @offset_x = - first_node.x + @width * 0.3
+      else
+        @offset_x = @width * 0.3
+
       @zoomer.scaleto 0.75
 
     _events: ->

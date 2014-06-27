@@ -76,6 +76,9 @@
         }).style({
           'margin': '25px 0 0 25px'
         });
+        if (start_count + common_count === 0) {
+          return;
+        }
         arcs = svg.selectAll('g.arc').data(d3.layout.pie()([start_count, common_count])).enter().append('g').attr({
           'class': 'arc',
           'transform': "translate(" + outer_radius + ", " + outer_radius + ")"
@@ -203,8 +206,12 @@
 
       KnowledgeView.prototype._init_pos = function() {
         var first_node;
-        first_node = this.tree_data.roots[0];
-        this.offset_x = -first_node.x + this.width * 0.3;
+        if (this.tree_data.roots.length) {
+          first_node = this.tree_data.roots[0];
+          this.offset_x = -first_node.x + this.width * 0.3;
+        } else {
+          this.offset_x = this.width * 0.3;
+        }
         return this.zoomer.scaleto(0.75);
       };
 
