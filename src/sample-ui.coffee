@@ -8,7 +8,7 @@ seajs.config
 seajs.use 'graph/view', (KnowledgeView)->
   jQuery ->
     if jQuery('body.sample').length
-      jQuery.getJSON 'data/js/js.json', (data)->
+      jQuery.getJSON 'data/js/cook-pan.json', (data)->
       # jQuery.getJSON 'fixture/graph.json', (data)->  
         new KnowledgeView jQuery('.graph-paper'), data
 

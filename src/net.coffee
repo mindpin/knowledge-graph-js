@@ -25,6 +25,10 @@ class KnowledgeNet
       parent_id = e['parent']
       child_id = e['child']
 
+      if parent_id is child_id
+        console.log "发现自指向关联 #{JSON.stringify e}"
+        continue
+
       @_edges.push [parent_id, child_id]
 
       parent = @find_by parent_id

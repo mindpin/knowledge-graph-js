@@ -13,7 +13,7 @@
   seajs.use('graph/view', function(KnowledgeView) {
     return jQuery(function() {
       if (jQuery('body.sample').length) {
-        jQuery.getJSON('data/js/js.json', function(data) {
+        jQuery.getJSON('data/js/cook-pan.json', function(data) {
           return new KnowledgeView(jQuery('.graph-paper'), data);
         });
       }

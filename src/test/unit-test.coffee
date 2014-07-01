@@ -1,4 +1,14 @@
-FIXTRUE_GRAPH_JSON_URL = 'fixture/graph.json'
+FIXTURE_GRAPH_JSON_URL = 'fixture/graph.json'
+
+###
+  该用例来源于 2014.07.01 的一次导数据尝试
+  cook-pan.graphml 转换为 json 时
+  由于 graphml 文件数据有一些问题，其中存在自指向关联
+  导致 json 中产生了 {"parent":"53b23f0f6c696e5c95070000","child":"53b23f0f6c696e5c95070000"}
+  这样的数据。这样的数据会导致计算节点深度时遍历出错。
+  目前 net.coffee 中已经修正了这个问题
+###
+FIXTURE_COOK_JSON_URL = 'fixture/cook-pan.json'
 
 seajs.config
   base: '../../js/'
@@ -9,10 +19,14 @@ seajs.use 'graph/net', (KnowledgeNet)->
   console.log KnowledgeNet
 
   jQuery ->
-    jQuery.getJSON FIXTRUE_GRAPH_JSON_URL, (obj)->
-      do_test KnowledgeNet, obj['G1'], obj['G2'], obj['G3'], obj['G4']
+    jQuery.getJSON FIXTURE_GRAPH_JSON_URL, (obj)->
+      jQuery.getJSON FIXTURE_COOK_JSON_URL, (cook_obj)->
+        do_test KnowledgeNet, 
+                obj['G1'], obj['G2'], 
+                obj['G3'], obj['G4'],
+                cook_obj
 
-do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj)->
+do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj)->
   test 'JSON Object 检查', ->
     ok g1_obj['points'].length == 8
     ok g1_obj['edges'].length == 11
@@ -21,6 +35,7 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj)->
   do ->
     knet = new KnowledgeNet(g1_obj)
     knet2 = new KnowledgeNet(g2_obj)
+    knet_cook = new KnowledgeNet(cook_obj)
 
     test '对象构建', ->
       ok knet.points().length == 8
@@ -69,11 +84,17 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj)->
       ok knet2.is_root 'O'
       ok !knet2.is_root 'P'
 
+    test '查找根节点-COOK', ->
+      roots = knet_cook.roots()
+      equal roots.length, 1
+      ok knet_cook.is_root '53b23f0f6c696e5c952d0000'
+
   # 多余边查找算法
   do ->
     knet1 = new KnowledgeNet(g1_obj)
     knet2 = new KnowledgeNet(g2_obj)
     knet3 = new KnowledgeNet(g3_obj)
+    knet_cook = new KnowledgeNet(cook_obj)
 
     test '查找多余边-G1', ->
       redundant_edges = knet1.get_redundant_edges()
@@ -90,6 +111,10 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj)->
       deepEqual redundant_edges.sort(), [
         ['A', 'C'], ['A', 'D'], ['B', 'E'], ['C', 'F']
       ]
+
+    test '查找多余边-COOK', ->
+      redundant_edges = knet_cook.get_redundant_edges()
+      deepEqual redundant_edges.sort(), []
 
     test '剔除多余边-G1', ->
       c = knet1.edges().length
@@ -156,6 +181,20 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj)->
       p2 = {id:'E', parents:['C', 'D']}
       ok ds.is_parents_here p1
       ok !ds.is_parents_here p2
+
+  # 多余边查找算法用到的函数 - COOK
+  do ->
+    knet_cook = new KnowledgeNet(cook_obj)
+    ds = new KnowledgeNet.DistanceSet knet_cook
+
+    test 'set#is_parents_here', ->
+      ds.set = {
+        '53b23f0f6c696e5c952d0000': {}
+        '53b23f0e6c696e5c95050000': {}
+      }
+
+      p1 = {id: '53b23f0e6c696e5c95060000', parents: ['53b23f0e6c696e5c95050000']}
+      ok ds.is_parents_here p1
 
   # 多余边查找算法用到的函数
   do ->
@@ -253,6 +292,7 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj)->
     knet2 = new KnowledgeNet(g2_obj)
     knet3 = new KnowledgeNet(g3_obj)
     knet4 = new KnowledgeNet(g4_obj)
+    knet_cook = new KnowledgeNet(cook_obj)
 
     test 'g1 deeps', ->
       deepEqual knet1.get_deeps(), {
@@ -289,6 +329,13 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj)->
         'F':5
         'G':1
       }
+
+    test 'cook deeps', ->
+      console.log knet_cook
+      window.knet = knet_cook
+      deeps = knet_cook.get_deeps()
+      equal Object.keys(deeps).length, 45
+
 
   # 生成树构建算法
   do ->

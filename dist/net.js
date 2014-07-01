@@ -34,6 +34,10 @@
         e = _ref1[_j];
         parent_id = e['parent'];
         child_id = e['child'];
+        if (parent_id === child_id) {
+          console.log("发现自指向关联 " + (JSON.stringify(e)));
+          continue;
+        }
         this._edges.push([parent_id, child_id]);
         parent = this.find_by(parent_id);
         child = this.find_by(child_id);
