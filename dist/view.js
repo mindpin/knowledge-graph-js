@@ -93,16 +93,16 @@
       };
 
       KnowledgeView.prototype.__bar_point_info = function() {
-        return this.$point_info = jQuery('<div></div>').addClass('point-info').html("<h3>创建数组</h3>\n<p>允许的字符的集合</p>\n<div>\n  <span class='depend'>前置知识点：</span>\n  <span class='depend-count'></span>\n</div>").appendTo(this.$paper);
+        return this.$point_info = jQuery('<div></div>').addClass('point-info').html("<h3>创建数组</h3>\n<p>知识点描述信息</p>\n<div>\n  <span class='depend'>前置知识点：</span>\n  <span class='depend-count'></span>\n</div>").appendTo(this.$paper);
       };
 
-      KnowledgeView.prototype.show_point_info = function(point, elm, direct_depend_count, indirect_depend_count) {
+      KnowledgeView.prototype.show_point_info = function(point, elm, ancestors_count) {
         var $e, dc, desc, l, name, o, o1, t;
         name = point.name;
         desc = point.desc;
         this.$point_info.find('h3').html(name);
         this.$point_info.find('p').html(desc);
-        dc = direct_depend_count + indirect_depend_count;
+        dc = ancestors_count;
         if (dc === 0) {
           this.$point_info.find('span.depend').hide();
           this.$point_info.find('span.depend-count').html('这是起始知识点');
@@ -219,38 +219,16 @@
         var that;
         that = this;
         return this.circles.on('mouseover', function(d, i) {
-          var d0, depend_point_ids, direct_depend_count, dr, id, links, parent, stack, _i, _len, _ref, _ref1;
-          links = that.links.filter(function(link) {
+          var acid, d0, _i, _len, _ref;
+          that.links.filter(function(link) {
             return link.target.id === d.id;
-          });
-          links.attr({
+          }).attr({
             'class': 'link direct-depend'
           });
           d0 = that.knet.find_by(d.id);
-          stack = d0.parents.map(function(id) {
-            return that.knet.find_by(id);
-          });
-          depend_point_ids = [];
-          while (stack.length > 0) {
-            dr = stack.shift();
-            _ref = dr.parents;
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              id = _ref[_i];
-              parent = that.knet.find_by(id);
-              stack.push(parent);
-              if (_ref1 = parent.id, __indexOf.call(depend_point_ids, _ref1) < 0) {
-                depend_point_ids.push(parent.id);
-              }
-            }
-            that.links.filter(function(link) {
-              return link.target.id === dr.id;
-            }).attr({
-              'class': 'link depend'
-            });
-          }
           that.circles.filter(function(c) {
-            var _ref2, _ref3;
-            return (_ref2 = c.id, __indexOf.call(depend_point_ids, _ref2) >= 0) || (_ref3 = c.id, __indexOf.call(d0.parents, _ref3) >= 0);
+            var _ref;
+            return _ref = c.id, __indexOf.call(d0.ancestors, _ref) >= 0;
           }).attr({
             'class': function(d) {
               if (d.depth === 1) {
@@ -259,8 +237,16 @@
               return 'depend';
             }
           });
-          direct_depend_count = links[0].length;
-          return that.show_point_info(d, this, direct_depend_count, depend_point_ids.length);
+          _ref = d0.ancestors;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            acid = _ref[_i];
+            that.links.filter(function(link) {
+              return link.target.id === acid;
+            }).attr({
+              'class': 'link depend'
+            });
+          }
+          return that.show_point_info(d, this, d0.ancestors.length);
         }).on('mouseout', function(d) {
           that.links.attr({
             'class': 'link'

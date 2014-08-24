@@ -1,5 +1,3 @@
-FIXTURE_GRAPH_JSON_URL = 'fixture/graph.json'
-
 ###
   该用例来源于 2014.07.01 的一次导数据尝试
   cook-pan.graphml 转换为 json 时
@@ -10,23 +8,44 @@ FIXTURE_GRAPH_JSON_URL = 'fixture/graph.json'
 ###
 FIXTURE_COOK_JSON_URL = 'fixture/cook-pan.json'
 
+###
+  该用例来源于 2014.8.24 的问题回报
+  https://github.com/mindpin/knowledge-camp/issues/78
+  此数据尝试加载时导致浏览器卡死
+###
+FIXTURE_COOK_ART_313_JSON_URL = 'fixture/art313.json'
+
+JSON_LIST = [
+  'fixture/g1.json'
+  'fixture/g2.json'
+  'fixture/g3.json'
+  'fixture/g4.json'
+  FIXTURE_COOK_JSON_URL
+  FIXTURE_COOK_ART_313_JSON_URL
+]
+
 seajs.config
   base: '../../js/'
   paths:
     'graph': 'graph/dist'
 
 seajs.use 'graph/net', (KnowledgeNet)->
-  console.log KnowledgeNet
+  loaded = []
+  length = JSON_LIST.length
+  load_next = ->
+    url = JSON_LIST.shift()
+    jQuery.getJSON url, (obj)->
+      loaded.push obj
+      if loaded.length < length
+        load_next()
+      else
+        [g1, g2, g3, g4, cook, art] = loaded
+        do_test KnowledgeNet, g1, g2, g3, g4, cook, art
 
-  jQuery ->
-    jQuery.getJSON FIXTURE_GRAPH_JSON_URL, (obj)->
-      jQuery.getJSON FIXTURE_COOK_JSON_URL, (cook_obj)->
-        do_test KnowledgeNet, 
-                obj['G1'], obj['G2'], 
-                obj['G3'], obj['G4'],
-                cook_obj
+  load_next()
 
-do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj)->
+
+do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj, art_obj)->
   test 'JSON Object 检查', ->
     ok g1_obj['points'].length == 8
     ok g1_obj['edges'].length == 11
@@ -94,7 +113,9 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj)->
     knet1 = new KnowledgeNet(g1_obj)
     knet2 = new KnowledgeNet(g2_obj)
     knet3 = new KnowledgeNet(g3_obj)
+    knet4 = new KnowledgeNet(g4_obj)
     knet_cook = new KnowledgeNet(cook_obj)
+    knet_art = new KnowledgeNet(art_obj)
 
     test '查找多余边-G1', ->
       redundant_edges = knet1.get_redundant_edges()
@@ -111,6 +132,10 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj)->
       deepEqual redundant_edges.sort(), [
         ['A', 'C'], ['A', 'D'], ['B', 'E'], ['C', 'F']
       ]
+
+    test '查找多余边-G4', ->
+      redundant_edges = knet4.get_redundant_edges()
+      deepEqual redundant_edges.sort(), []
 
     test '查找多余边-COOK', ->
       redundant_edges = knet_cook.get_redundant_edges()
@@ -152,139 +177,6 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj)->
 
       deepEqual knet3.find_by('D').children, ['E']
       deepEqual knet3.find_by('E').children, ['F']
-
-  # 多余边查找算法用到的函数
-  do ->
-    knet = new KnowledgeNet(g1_obj)
-    ds = new KnowledgeNet.DistanceSet knet
-
-    test 'set#is_parents_here', ->
-      ds.set = {}
-      p = {id:'A', parents:[]}
-      ok ds.is_parents_here p
-
-    test 'set#is_parents_here', ->
-      ds.set = {
-        'A':{}
-        'B':{}
-      }
-      p = {id:'C', parents:['A']}
-      ok ds.is_parents_here p
-
-    test 'set#is_parents_here', ->
-      ds.set = {
-        'A':{}
-        'B':{}
-        'C':{}
-      }
-      p1 = {id:'D', parents:['A', 'B', 'C']}
-      p2 = {id:'E', parents:['C', 'D']}
-      ok ds.is_parents_here p1
-      ok !ds.is_parents_here p2
-
-  # 多余边查找算法用到的函数 - COOK
-  do ->
-    knet_cook = new KnowledgeNet(cook_obj)
-    ds = new KnowledgeNet.DistanceSet knet_cook
-
-    test 'set#is_parents_here', ->
-      ds.set = {
-        '53b23f0f6c696e5c952d0000': {}
-        '53b23f0e6c696e5c95050000': {}
-      }
-
-      p1 = {id: '53b23f0e6c696e5c95060000', parents: ['53b23f0e6c696e5c95050000']}
-      ok ds.is_parents_here p1
-
-  # 多余边查找算法用到的函数
-  do ->
-    knet = new KnowledgeNet(g1_obj)
-    ds = new KnowledgeNet.DistanceSet knet
-
-    test 'set#add A', ->
-      ds.add knet.find_by('A')
-      deepEqual ds.set, {
-        'A':{}
-      }
-
-    test 'set#add B', ->
-      ds.add knet.find_by('B')
-      deepEqual ds.set, {
-        'A':{'B':1}
-        'B':{}
-      }
-
-    test 'set#add C', ->
-      ds.add knet.find_by('C')
-      deepEqual ds.set, {
-        'A':{'B':1, 'C':1}
-        'B':{}
-        'C':{}
-      }
-
-    test 'set#add D', ->
-      ds.add knet.find_by('D')
-      deepEqual ds.set, {
-        'A':{'B':1, 'C':1, 'D':2}
-        'B':{'D':1}
-        'C':{}
-        'D':{}
-      }
-
-    test 'set#add F', ->
-      ds.add knet.find_by('F')
-      deepEqual ds.set, {
-        'A':{'B':1, 'C':1, 'D':2, 'F':2}
-        'B':{'D':1}
-        'C':{'F':1}
-        'D':{}
-        'F':{}
-      }
-
-    test 'set#add E', ->
-      ds.add knet.find_by('E')
-      deepEqual ds.set, {
-        'A':{'B':1, 'C':1, 'D':2, 'F':2, 'E':3}
-        'B':{'D':1, 'E':2}
-        'C':{'F':1, 'E':2}
-        'D':{'E':1}
-        'F':{'E':1}
-        'E':{}
-      }
-      deepEqual ds.redundant_edges, [
-        ['B', 'E']
-      ]
-
-    test 'set#add G', ->
-      ds.add knet.find_by('G')
-      deepEqual ds.set, {
-        'A':{'B':1, 'C':1, 'D':2, 'F':2, 'E':3, 'G':4}
-        'B':{'D':1, 'E':2, 'G':3}
-        'C':{'F':1, 'E':2, 'G':3}
-        'D':{'E':1, 'G':2}
-        'F':{'E':1, 'G':2}
-        'E':{'G':1}
-        'G':{}
-      }
-      deepEqual ds.redundant_edges, [
-        ['B', 'E']
-      ]
-
-    test 'set#add H', ->
-      ds.add knet.find_by('H')
-      deepEqual ds.set, {
-        'A':{'B':1, 'C':1, 'D':2, 'F':2, 'E':3, 'G':4, 'H':5}
-        'B':{'D':1, 'E':2, 'G':3, 'H':4}
-        'C':{'F':1, 'E':2, 'G':3, 'H':4}
-        'D':{'E':1, 'G':2, 'H':3}
-        'F':{'E':1, 'G':2, 'H':3}
-        'E':{'G':1, 'H':2}
-        'G':{'H':1}
-        'H':{}
-      }
-      deepEqual ds.redundant_edges.sort(), [
-        ['B', 'E'], ['D', 'H'], ['F', 'H']
-      ]
 
   # 最优化节点深度
   do ->
@@ -370,21 +262,6 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj)->
       tree_data = knet1.get_tree_nesting_data()
       deepEqual tree_data.roots[0].id, 'A'
 
-  # bugfix __deeps_arr
-  do ->
-    knet1 = new KnowledgeNet(g1_obj)
-
-    test 'BUGFIX: __deeps_arr', ->
-      knet1.deeps =
-        'A': 10
-        'B': 17
-        'C': 1
-        'D': 2
-        'E': 5
-
-      deepEqual knet1.__deeps_arr(), [
-        'C', 'D', 'E', 'A', 'B'
-      ]
   
   do ->
     test 'break-text', ->
@@ -441,5 +318,20 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj)->
       equal KnowledgeNet.__slen(16), 6
       equal KnowledgeNet.__slen(17), 6
       equal KnowledgeNet.__slen(18), 6
+
+
+  # test 'art'
+  do ->
+    knet_art = new KnowledgeNet(art_obj)
+
+    test '对象构建', ->
+      equal knet_art.points().length, 313
+      equal knet_art.edges().length, 384
+
+    test '获取 roots', ->
+      equal knet_art.roots().length, 2
+
+    test '清理 arts 多余边', ->
+      equal knet_art.get_redundant_edges().length, 0
 
   # test '环路检查'

@@ -1,0 +1,22 @@
+{
+  "points": [
+    { "id": "A", "name": "A" },
+    { "id": "B", "name": "B" },
+    { "id": "C", "name": "C" },
+    { "id": "D", "name": "D" },
+    { "id": "E", "name": "E" },
+    { "id": "F", "name": "F" }
+  ],
+
+  "edges": [
+    { "parent": "A", "child": "B" },
+    { "parent": "A", "child": "C" },
+    { "parent": "A", "child": "D" },
+    { "parent": "B", "child": "C" },
+    { "parent": "B", "child": "E" },
+    { "parent": "C", "child": "D" },
+    { "parent": "C", "child": "F" },
+    { "parent": "D", "child": "E" },
+    { "parent": "E", "child": "F" }
+  ]
+}

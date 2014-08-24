@@ -4,6 +4,12 @@ define (require, exports, module)->
 edge_equal = (e1, e2)->
   e1[0] == e2[0] and e1[1] == e2[1]
 
+union_arrays = (arr1, arr2)->
+  re = {}
+  re[i] = i for i in arr1
+  re[j] = j for j in arr2
+  k for k of re
+
 class KnowledgeNet
   constructor: (json_obj)->
     @_points_map = {}
@@ -26,7 +32,7 @@ class KnowledgeNet
       child_id = e['child']
 
       if parent_id is child_id
-        console.log "发现自指向关联 #{JSON.stringify e}"
+        console.log "发现自指向关联 #{JSON.stringify e}。自动剔除。"
         continue
 
       @_edges.push [parent_id, child_id]
@@ -60,24 +66,57 @@ class KnowledgeNet
   is_root: (id)->
     @find_by(id).parents.length is 0
 
+  # ----------------------------------
 
+  # 查找多余边
   get_redundant_edges: ->
-    _set = new DistanceSet(@)
-    _arr = (id for id in @roots())
+    re = []
 
-    # 宽度优先遍历
-    while _arr.length > 0
-      point = @find_by _arr.shift()
-      _set.add point
-      
+    loaded = []
+    arr = (id for id in @roots())
+
+    while arr.length > 0
+      id = arr.shift()
+      point = @find_by id 
+      loaded.push id
+
+      ancestors = []
+      deep = 1
+      # 去除多余边，同时设置祖先列表
+      for parent_id in point.parents
+        parent = @find_by parent_id
+
+        _deep = parent.deep + 1
+        deep = _deep if _deep > deep
+
+        # 如果父节点 A 的祖先里有父节点 B，那么BP就是多余边
+        for another_parent_id in point.parents
+          if parent_id isnt another_parent_id
+            if parent.ancestors.indexOf(another_parent_id) > -1
+              re.push [another_parent_id, id]
+
+        ancestors = union_arrays ancestors, [parent_id]
+        ancestors = union_arrays ancestors, parent.ancestors
+
+      point.ancestors = ancestors
+      point.deep = deep
+
       for child_id in point.children
         child = @find_by child_id
-        _arr.push child_id if _set.is_parents_here child
-          
-    @deeps = _set.deeps
+        arr.push child_id if @_is_parents_in_arr(child, loaded)
 
-    return _set.redundant_edges
+    # re
+    # for id in @points()
+    #   p = @find_by(id)
+    #   console.log id, p.deep, p.ancestors
+    re
 
+  # ----------------------------------
+
+  _is_parents_in_arr: (point, arr)->
+    for parent_id in point.parents
+      return false if !(parent_id in arr)
+    return true
 
   clean_redundant_edges: ->
     unless @cleaned
@@ -108,10 +147,18 @@ class KnowledgeNet
     @_edges = @_edges.filter (e)->
       not edge_equal(e, edge)
 
+
+  # 获取深度统计
   get_deeps: ->
     @clean_redundant_edges()
-    @deeps
+    re = {}
+    for id in @points()
+      point = @find_by id
+      re[id] = point.deep
+    return re
 
+
+  # 最小生成树
   get_tree_data: ->
     @clean_redundant_edges()
 
@@ -134,6 +181,7 @@ class KnowledgeNet
     }
 
 
+  # d3 绘图用数据
   get_tree_nesting_data: ->
     @clean_redundant_edges()
 
@@ -148,7 +196,7 @@ class KnowledgeNet
         name: point.name
         desc: point.desc
         children: []
-        deep: @deeps[id]
+        deep: point.deep
 
     stack = []
     for id in arr
@@ -190,10 +238,16 @@ class KnowledgeNet
     map_point.count
 
   __deeps_arr: ->
-    # deeps 排序数组
-    ([@deeps[id], id] for id of @deeps)
-      .sort (a, b)-> a[0] - b[0]
-      .map (item)-> item[1]
+    @__points_order_by_deeps()
+
+  # 返回按深度排序的节点列表
+  __points_order_by_deeps: ->
+    (@find_by(id) for id in @points())
+      .sort (a, b)-> a.deep - b.deep
+      .map (p)-> p.id
+
+
+  # -------------------
 
   # 字符串分割，
   # <=6，不处理
@@ -255,49 +309,49 @@ class KnowledgeNet
     c = (length - 1) // 6
     Math.ceil(length / (c + 1))
 
-# SET = {}
-# RE = {}
-# 宽度优先遍历节点
-# 如果节点的父节点都在 SET 中
-#   将节点置入 SET
-#   处理 SET 中各个节点的路径长度信息
-#   一旦发现冲突，解决冲突，并将导致冲突的边置入 RE
+# # SET = {}
+# # RE = {}
+# # 宽度优先遍历节点
+# # 如果节点的父节点都在 SET 中
+# #   将节点置入 SET
+# #   处理 SET 中各个节点的路径长度信息
+# #   一旦发现冲突，解决冲突，并将导致冲突的边置入 RE
 
-# 记录节点之间的路径长度
-class DistanceSet
-  constructor: (@net)->
-    @set = {}
-    @redundant_edges = []
-    @deeps = {}
+# # 记录节点之间的路径长度
+# class DistanceSet
+#   constructor: (@net)->
+#     @set = {}
+#     @redundant_edges = []
+#     @deeps = {}
 
-  is_parents_here: (point)->
-    for parent_id in point.parents
-      return false if !(parent_id of @set)
-    return true
+#   is_parents_here: (point)->
+#     for parent_id in point.parents
+#       return false if !(parent_id of @set)
+#     return true
 
-  add: (point)->
-    @set[point.id] = {}
-    deep = @_r(point, point, 1)
-    @deeps[point.id] = deep
+#   add: (point)->
+#     @set[point.id] = {}
+#     deep = @_r(point, point, 1)
+#     @deeps[point.id] = deep
 
-  _r: (current_point, point, distance)->
-    deep = 1
-    for parent_id in current_point.parents
-      @_merge parent_id, point.id, distance
-      d = @_r @net.find_by(parent_id), point, distance + 1
-      deep = Math.max(deep, @deeps[parent_id] + 1)
-    return deep
+#   _r: (current_point, point, distance)->
+#     deep = 1
+#     for parent_id in current_point.parents
+#       @_merge parent_id, point.id, distance
+#       d = @_r @net.find_by(parent_id), point, distance + 1
+#       deep = Math.max(deep, @deeps[parent_id] + 1)
+#     return deep
 
-  _merge: (target_id, point_id, distance)->
-    d0 = @set[target_id][point_id]
+#   _merge: (target_id, point_id, distance)->
+#     d0 = @set[target_id][point_id]
 
-    if !d0
-      @set[target_id][point_id] = distance
-      return
+#     if !d0
+#       @set[target_id][point_id] = distance
+#       return
 
-    @set[target_id][point_id] = Math.max d0, distance
+#     @set[target_id][point_id] = Math.max d0, distance
 
-    if d0 != distance && Math.min(d0, distance) == 1
-      @redundant_edges.push [target_id, point_id]
+#     if d0 != distance && Math.min(d0, distance) == 1
+#       @redundant_edges.push [target_id, point_id]
 
-KnowledgeNet.DistanceSet = DistanceSet
+# KnowledgeNet.DistanceSet = DistanceSet

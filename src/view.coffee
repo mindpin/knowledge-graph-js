@@ -141,7 +141,7 @@ define (require, exports, module)->
         .addClass 'point-info'
         .html """
                 <h3>创建数组</h3>
-                <p>允许的字符的集合</p>
+                <p>知识点描述信息</p>
                 <div>
                   <span class='depend'>前置知识点：</span>
                   <span class='depend-count'></span>
@@ -149,14 +149,14 @@ define (require, exports, module)->
               """
         .appendTo @$paper
 
-    show_point_info: (point, elm, direct_depend_count, indirect_depend_count)->
+    show_point_info: (point, elm, ancestors_count)->
       name = point.name
       desc = point.desc
 
       @$point_info.find('h3').html name
       @$point_info.find('p').html desc
 
-      dc = direct_depend_count + indirect_depend_count
+      dc = ancestors_count
 
       if dc is 0
         @$point_info.find('span.depend').hide()
@@ -274,43 +274,33 @@ define (require, exports, module)->
           # d is data object
           # this is dom
 
-          # 标记直接依赖节点
-          links = that.links.filter (link)->
-            link.target.id is d.id
+          # 标记父级节点
+          that.links
+            .filter (link)->
+              link.target.id is d.id
+            .attr
+              'class': 'link direct-depend'
 
-          links.attr
-            'class': 'link direct-depend'
-
-          # 标记间接依赖节点
+          # 标记祖先节点
           d0 = that.knet.find_by d.id
-          stack = d0.parents.map (id)-> that.knet.find_by id
-          depend_point_ids = []
+          # ancestors = d0.ancestors.map (id)-> that.knet.find_by id
 
-          while stack.length > 0
-            dr = stack.shift()
-            for id in dr.parents
-              parent = that.knet.find_by id
-              stack.push parent
-              depend_point_ids.push parent.id unless parent.id in depend_point_ids
-
-            that.links
-              .filter (link)->
-                link.target.id is dr.id
-              .attr
-                'class': 'link depend'
-
-          # 高亮间接依赖节点
           that.circles
             .filter (c)->
-              c.id in depend_point_ids or c.id in d0.parents
+              c.id in d0.ancestors
             .attr
               'class': (d)->
                 return 'start-point' if d.depth is 1
                 return 'depend'
 
-          direct_depend_count = links[0].length
+          for acid in d0.ancestors
+            that.links
+              .filter (link)->
+                link.target.id is acid
+              .attr
+                'class': 'link depend'
 
-          that.show_point_info(d, this, direct_depend_count, depend_point_ids.length)
+          that.show_point_info(d, this, d0.ancestors.length)
 
         .on 'mouseout', (d)->
           that.links.attr
