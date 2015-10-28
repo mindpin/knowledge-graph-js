@@ -8,6 +8,8 @@ module KnowledgeGraphJs
     initializer 'knowledge-graph-js.assets.precompile' do |app|
       app.config.assets.paths << root.join('app/assets/fixture')
 
+      app.config.assets.precompile << "knowledge_graph_js/lib/d3-3.4.6.min.js"
+      app.config.assets.precompile << "knowledge_graph_js/lib/sea-2.2.1.js"
       app.config.assets.precompile << "knowledge_graph_js/graph/view.js"
       app.config.assets.precompile << "knowledge_graph_js/graph/net.js"
       app.config.assets.precompile << "knowledge_graph_js/graph/zoomer.js"

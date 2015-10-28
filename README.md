@@ -5,8 +5,8 @@
 ## 安装
 
 ```ruby
-gem "knowledge_graph_js",
-  :git => "git://github.com/mindpin/knowledge_graph_js.git",
+gem "knowledge-graph-js",
+  :git => "git://github.com/mindpin/knowledge-graph-js.git",
   :tag => "0.0.1"
 ```
 
