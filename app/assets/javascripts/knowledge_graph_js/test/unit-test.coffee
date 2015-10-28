@@ -6,28 +6,28 @@
   这样的数据。这样的数据会导致计算节点深度时遍历出错。
   目前 net.coffee 中已经修正了这个问题
 ###
-FIXTURE_COOK_JSON_URL = 'fixture/cook-pan.json'
+FIXTURE_COOK_JSON_URL = '/assets/knowledge_graph_js/cook-pan.json'
 
 ###
   该用例来源于 2014.8.24 的问题回报
   https://github.com/mindpin/knowledge-camp/issues/78
   此数据尝试加载时导致浏览器卡死
 ###
-FIXTURE_COOK_ART_313_JSON_URL = 'fixture/art313.json'
+FIXTURE_COOK_ART_313_JSON_URL = '/assets/knowledge_graph_js/art313.json'
 
 JSON_LIST = [
-  'fixture/g1.json'
-  'fixture/g2.json'
-  'fixture/g3.json'
-  'fixture/g4.json'
+  '/assets/knowledge_graph_js/g1.json'
+  '/assets/knowledge_graph_js/g2.json'
+  '/assets/knowledge_graph_js/g3.json'
+  '/assets/knowledge_graph_js/g4.json'
   FIXTURE_COOK_JSON_URL
   FIXTURE_COOK_ART_313_JSON_URL
 ]
 
 seajs.config
-  base: '../../js/'
+  base: '/assets/knowledge_graph_js/'
   paths:
-    'graph': 'graph/dist'
+    'graph': 'graph'
 
 seajs.use 'graph/net', (KnowledgeNet)->
   loaded = []
@@ -63,14 +63,14 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj, art_obj)->
     do ->
       n = knet.find_by('A')
       ne = knet.find_by('E')
-      
+
       test '根据 ID 查找节点', ->
         equal n.id, 'A'
         equal n.name, 'A'
 
       test '节点关联的边-G1-A', ->
         edges = n.edges
-        equal edges.length, 2 
+        equal edges.length, 2
         deepEqual edges.sort(), [['A', 'B'], ['A', 'C']]
 
       test '节点关联的边-G1-E', ->
@@ -144,7 +144,7 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj, art_obj)->
     test '剔除多余边-G1', ->
       c = knet1.edges().length
       knet1.clean_redundant_edges()
-      equal knet1.edges().length, c - 3 
+      equal knet1.edges().length, c - 3
 
       deepEqual knet1.find_by('B').children, ['D']
       deepEqual knet1.find_by('E').parents, ['D', 'F']
@@ -152,19 +152,19 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj, art_obj)->
     test '剔除多余边-G2', ->
       c = knet2.edges().length
       knet2.clean_redundant_edges()
-      equal knet2.edges().length, c 
+      equal knet2.edges().length, c
 
     test '剔除多余边-G3', ->
       deepEqual knet3.find_by('C').edges, [
         ['A', 'C'],
-        ['B', 'C'], 
+        ['B', 'C'],
         ['C', 'D'],
         ['C', 'F']
       ]
 
       c = knet3.edges().length
       knet3.clean_redundant_edges()
-      equal knet3.edges().length, c - 4 
+      equal knet3.edges().length, c - 4
 
       deepEqual knet3.find_by('A').children, ['B']
       deepEqual knet3.find_by('A').edges, [['A', 'B']]
@@ -188,7 +188,7 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj, art_obj)->
 
     test 'g1 deeps', ->
       deepEqual knet1.get_deeps(), {
-        'A':1, 
+        'A':1,
         'B':2, 'C':2
         'D':3, 'F':3
         'E':4
@@ -198,7 +198,7 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj, art_obj)->
 
     test 'g2 deeps', ->
       deepEqual knet2.get_deeps(), {
-        'I':1, 'J':1 
+        'I':1, 'J':1
         'K':2,
         'L':3, 'M':3
         'N':4
@@ -214,10 +214,10 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj, art_obj)->
 
     test 'g4 deeps', ->
       deepEqual knet4.get_deeps(), {
-        'A':1, 
+        'A':1,
         'B':2, 'D':2
-        'C':3, 
-        'E':4, 
+        'C':3,
+        'E':4,
         'F':5
         'G':1
       }
@@ -262,7 +262,7 @@ do_test = (KnowledgeNet, g1_obj, g2_obj, g3_obj, g4_obj, cook_obj, art_obj)->
       tree_data = knet1.get_tree_nesting_data()
       deepEqual tree_data.roots[0].id, 'A'
 
-  
+
   do ->
     test 'break-text', ->
       deepEqual KnowledgeNet.break_text('数组'), ['数组']

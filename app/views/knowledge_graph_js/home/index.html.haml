@@ -1,28 +1,4 @@
-.engine-generated
-  .desc 
-    %span rails engine 
-    %strong knowledge_graph_js 
-    %span 已成功创建
-  .desc 你可以继续进行组件开发了
-
-.engine-generated
-  - if user_signed_in?
-    .desc.current-user
-      %span 当前用户：
-      %strong= current_user.name
-  - else
-    .desc
-      %span 当前无登录用户
-
-  .desc
-    %span 访问
-    %a{:href => '/auth'} /auth
-    %span 注册
-  .desc
-    %span 访问
-    %a{:href => '/auth/login'} /auth/login
-    %span 登录
-  .desc
-    %span 点击
-    %a{:href => '/auth/logout', :data => {:method => :delete}} DELETE /auth/logout
-    %span 登出
+#qunit
+#qunit-fixture
+  
+= javascript_include_tag "knowledge_graph_js/test"

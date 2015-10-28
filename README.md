@@ -1,31 +1,15 @@
 # KnowledgeGraphJs
 
-TODO: Write a gem description
+知识网络用到的绘图函数
 
-## Installation
-
-Add this line to your application's Gemfile:
+## 安装
 
 ```ruby
-gem 'knowledge_graph_js'
+gem "knowledge_graph_js",
+  :git => "git://github.com/mindpin/knowledge_graph_js.git",
+  :tag => "0.0.1"
 ```
 
-And then execute:
+## 使用说明
 
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install knowledge_graph_js
-
-## Usage
-
-TODO: Write usage instructions here
-
-## Contributing
-
-1. Fork it ( https://github.com/[my-github-username]/knowledge_graph_js/fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+TODO
