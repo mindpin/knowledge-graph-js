@@ -1,7 +1,31 @@
-knowledge-graph-js
-==================
+# KnowledgeGraphJs
 
-知识网络用到的绘图函数，作为 submodule 使用
+TODO: Write a gem description
 
-具体引用方式参考：
-https://github.com/mindpin/sample-kc-feature-visual-map
+## Installation
+
+Add this line to your application's Gemfile:
+
+```ruby
+gem 'knowledge_graph_js'
+```
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install knowledge_graph_js
+
+## Usage
+
+TODO: Write usage instructions here
+
+## Contributing
+
+1. Fork it ( https://github.com/[my-github-username]/knowledge_graph_js/fork )
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create a new Pull Request

@@ -1,0 +1,17 @@
+body {
+  background-color: #fafafa;
+  font-family: '微软雅黑', arial;
+  color: #444;
+}
+
+.engine-generated {
+  padding: 15px;
+  background-color: #ffffda;
+  .desc {
+    font-size: 16px;
+    margin-bottom: 10px;
+    &.current-user {
+      color: #FF4400;
+    }
+  }
+}

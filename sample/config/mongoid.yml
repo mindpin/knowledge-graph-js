@@ -1,0 +1,12 @@
+development:
+  sessions:
+    default:
+      database: knowledge-graph-js_dev
+      hosts:
+        - localhost:27017
+test:
+  sessions:
+    default:
+      database: knowledge-graph-js_test
+      hosts:
+        - localhost:27017
